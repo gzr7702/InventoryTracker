@@ -3,14 +3,28 @@ package com.gzr7702.inventorytracker;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
+
 
 public class MainActivity extends AppCompatActivity {
+    ListView listView;
+    String[] values = new String[] { "Screwdriver",
+            "Box",
+            "Rock",
+            "Flower",
+            "Dog",
+            "Moodswing",
+            "Ballyhoo"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +41,47 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
+
+        listView = (ListView) findViewById(R.id.inventory_list);
+
+        // Account for empty view
+        // TODO: uncomment to implement empty view
+        //TextView emptyStateTextView = (TextView) findViewById(R.id.empty_view);
+        //listView.setEmptyView(emptyStateTextView);
+
+        // For now, fake list
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, android.R.id.text1, values);
+
+
+        // Assign adapter to ListView
+        listView.setAdapter(adapter);
+
+        // ListView Item Click Listener
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+
+                // ListView Clicked item index
+                int itemPosition     = position;
+
+                // ListView Clicked item value
+                String  itemValue    = (String) listView.getItemAtPosition(position);
+
+                // Show Alert
+                Toast.makeText(getApplicationContext(),
+                        "Position :"+itemPosition+"  ListItem : " +itemValue , Toast.LENGTH_LONG)
+                        .show();
+
+            }
+
+        });
+
+        // TODO: Set up adapter with empty list
+        //mAdapter = new NewsAdapter(this.getApplicationContext(), new ArrayList<NewsStory>());
+        //mListView.setAdapter(mAdapter);
     }
 
     @Override
