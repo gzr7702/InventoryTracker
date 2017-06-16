@@ -7,4 +7,10 @@
     android:layout_height="match_parent"
     tools:context="com.gzr7702.inventorytracker.NewEntryActivity">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="Add a new item here"/>
+
 </android.support.constraint.ConstraintLayout>
