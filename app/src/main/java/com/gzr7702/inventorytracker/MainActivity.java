@@ -1,6 +1,9 @@
 package com.gzr7702.inventorytracker;
 
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -15,11 +18,11 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        LoaderManager.LoaderCallbacks<Cursor> {
     ListView mListView;
     InventoryAdapter mAdapter;
     //ArrayList<InventoryItem> dummyList = new ArrayList<>();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +43,8 @@ public class MainActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.inventory_list);
 
         // Account for empty view
-        // TODO: uncomment to implement empty view
-        //TextView emptyStateTextView = (TextView) findViewById(R.id.empty_view);
-        //listView.setEmptyView(emptyStateTextView);
+        View emptyStateView = findViewById(R.id.empty_view);
+        mListView.setEmptyView(emptyStateView);
 
         // ListView Item Click Listener
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -97,5 +99,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }
