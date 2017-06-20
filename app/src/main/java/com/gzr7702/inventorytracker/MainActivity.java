@@ -8,23 +8,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
-    ListView listView;
-    String[] values = new String[] { "Screwdriver",
-            "Box",
-            "Rock",
-            "Flower",
-            "Dog",
-            "Moodswing",
-            "Ballyhoo"
-    };
+    ListView mListView;
+    InventoryAdapter mAdapter;
+    //ArrayList<InventoryItem> dummyList = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,33 +37,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        listView = (ListView) findViewById(R.id.inventory_list);
+        mListView = (ListView) findViewById(R.id.inventory_list);
 
         // Account for empty view
         // TODO: uncomment to implement empty view
         //TextView emptyStateTextView = (TextView) findViewById(R.id.empty_view);
         //listView.setEmptyView(emptyStateTextView);
 
-        // For now, fake list
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
-
-
-        // Assign adapter to ListView
-        listView.setAdapter(adapter);
-
         // ListView Item Click Listener
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
 
                 // ListView Clicked item index
-                int itemPosition     = position;
+                int itemPosition = position;
 
                 // ListView Clicked item value
-                String  itemValue    = (String) listView.getItemAtPosition(position);
+                String itemValue = (String) mListView.getItemAtPosition(position);
 
                 // Show Alert
                 Toast.makeText(getApplicationContext(),
@@ -79,9 +66,15 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        // TODO: Set up adapter with empty list
-        //mAdapter = new NewsAdapter(this.getApplicationContext(), new ArrayList<NewsStory>());
-        //mListView.setAdapter(mAdapter);
+        /*
+        dummyList.add(new InventoryItem("Flibbit", 10, 3.33, R.drawable.item));
+        dummyList.add(new InventoryItem("Item Number 12", 1, 23.33, R.drawable.item));
+        dummyList.add(new InventoryItem("Tic Tac", 33, 9.99, R.drawable.item));
+        dummyList.add(new InventoryItem("Drawer", 14, 13.99, R.drawable.item));
+
+        mAdapter = new InventoryAdapter(this.getApplicationContext(), dummyList);
+        mListView.setAdapter(mAdapter);
+        */
     }
 
     @Override
