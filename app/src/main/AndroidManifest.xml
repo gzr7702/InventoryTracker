@@ -24,6 +24,10 @@
             android:label="@string/title_activity_new_entry"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+        <provider
+            android:name=".data.InventoryProvider"
+            android:authorities="com.gzr7702.inventorytracker"
+            android:exported="false"/>
     </application>
 
 </manifest>

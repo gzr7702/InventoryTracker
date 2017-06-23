@@ -75,21 +75,18 @@ public class InventoryProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case INVENTORY:
-                return insertPet(uri, contentValues);
+                return insertItem(uri, contentValues);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
     }
 
-    private Uri insertPet(Uri uri, ContentValues values) {
+    private Uri insertItem(Uri uri, ContentValues values) {
 
         String itemName = values.getAsString(InventoryEntry.COLUMN_ITEM_NAME);
         if (itemName == null) {
             throw new IllegalArgumentException("Item requires a name");
         }
-
-        Integer quantity = values.getAsInteger(InventoryEntry.COLUMN_QUANTITY);
-        Double price = values.getAsDouble(InventoryEntry.COLUMN_PRICE);
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
@@ -101,7 +98,7 @@ public class InventoryProvider extends ContentProvider {
             return null;
         }
 
-        // Notify all listeners that the data has changed for the pet content URI
+        // Notify all listeners that the data has changed for the inventory content URI
         getContext().getContentResolver().notifyChange(uri, null);
 
         // Return the new URI with the ID (of the newly inserted row) appended at the end

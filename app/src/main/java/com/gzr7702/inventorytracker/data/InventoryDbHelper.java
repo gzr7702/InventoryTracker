@@ -25,7 +25,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
                 InventoryEntry.COLUMN_ITEM_NAME + " TEXT NOT NULL, " +
                 InventoryEntry.COLUMN_QUANTITY + " INTEGER NOT NULL DEFAULT 0, " +
                 InventoryEntry.COLUMN_PRICE + " DOUBLE NOT NULL DEFAULT 0.00, " +
-                InventoryEntry.COLUMN_PRICE + " INTEGER NOT NULL DEFAULT 0" +
+                InventoryEntry.COLUMN_THUMBNAIL + " INTEGER NOT NULL DEFAULT 0" +
                 " );";
 
         sqLiteDatabase.execSQL(SQL_CREATE_INVENTORY_TABLE);
