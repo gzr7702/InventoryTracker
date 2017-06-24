@@ -79,18 +79,6 @@ public class MainActivity extends AppCompatActivity implements
         getLoaderManager().initLoader(INVENTORY_LOADER, null, this);
     }
 
-    // Temporarily add dummy data for now
-    // TODO: get rid of this
-    private void insertItem() {
-        ContentValues values = new ContentValues();
-        values.put(InventoryEntry.COLUMN_ITEM_NAME, "Screwdriver");
-        values.put(InventoryEntry.COLUMN_QUANTITY, 3);
-        values.put(InventoryEntry.COLUMN_PRICE, 9.99);
-        values.put(InventoryEntry.COLUMN_THUMBNAIL, R.drawable.item);
-
-        Uri newUri = getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
-    }
-
     // Delete all data
     private void deleteAllItems() {
         int rowsDeleted = getContentResolver().delete(InventoryEntry.CONTENT_URI, null, null);
@@ -107,11 +95,6 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
-            // Respond to a click on the "Insert dummy data" menu option
-            case R.id.action_insert_dummy_data:
-                insertItem();
-                return true;
-            // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
                 deleteAllItems();
                 return true;

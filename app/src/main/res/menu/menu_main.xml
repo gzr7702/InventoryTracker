@@ -4,12 +4,7 @@
       tools:context=".CatalogActivity">
 
     <item
-        android:id="@+id/action_insert_dummy_data"
-        android:title="action_insert_dummy_data"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_delete_all_entries"
-        android:title="action_delete_all_entries"
+        android:title="@string/delete_button_text"
         app:showAsAction="never" />
 </menu>

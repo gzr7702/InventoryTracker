@@ -4,4 +4,7 @@
     <string name="title_activity_new_entry">NewEntryActivity</string>
     <string name="empty_view_header">There are no items in your inventory!</string>
     <string name="empty_view_string">Click the floating button to please enter some</string>
+    <string name="delete_button_text">Delete all items</string>
+    <string name="add_button_text">Add Item</string>
+    <string name="add_photo_text">Click to add photo</string>
 </resources>
