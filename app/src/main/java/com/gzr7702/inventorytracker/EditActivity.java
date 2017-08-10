@@ -48,7 +48,8 @@ public class EditActivity extends AppCompatActivity implements
     // Boolean flag that keeps track of whether the item has been edited
     private boolean mItemHasChanged = false;
 
-    // Set quantity so it can be accessed classwide
+    // Set vars that need to be accessed classwide
+    private String mName = "";
     private int mQuantity = 0;
 
      // OnTouchListener that listens for any user touches on a View, implying that they are modifying
@@ -94,6 +95,7 @@ public class EditActivity extends AppCompatActivity implements
         mPriceEditText = (EditText) findViewById(R.id.price_edit_text);
         Button incrementButton = (Button) findViewById(R.id.increment_button);
         Button decrementButton = (Button) findViewById(R.id.decrement_button);
+        Button orderButton = (Button) findViewById(R.id.order_button);
 
         // Setup OnTouchListeners on all the input fields, so we can determine if the user
         // has touched or modified them. This will let us know if there are unsaved changes
@@ -116,6 +118,21 @@ public class EditActivity extends AppCompatActivity implements
                 mQuantity--;
                 mQuantityEditText.setText(Integer.toString(mQuantity));
             }
+        });
+
+        orderButton.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view){
+               String subject = mName + " Order";
+               String body = "Please send an order of the above mentioned item in the quantity of ";
+               Intent intent = new Intent(Intent.ACTION_SENDTO);
+               intent.setData(Uri.parse("mailto:"));
+               intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+               intent.putExtra(Intent.EXTRA_TEXT, body);
+               if (intent.resolveActivity(getPackageManager()) != null) {
+                   startActivity(intent);
+               }
+           }
         });
     }
 
@@ -284,12 +301,12 @@ public class EditActivity extends AppCompatActivity implements
             int priceColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
 
             // Extract out the value from the Cursor for the given column index
-            String name = cursor.getString(nameColumnIndex);
+            mName = cursor.getString(nameColumnIndex);
             mQuantity = cursor.getInt(quantityColumnIndex);
             double price = cursor.getDouble(priceColumnIndex);
 
             // Update the views on the screen with the values from the database
-            mNameEditText.setText(name);
+            mNameEditText.setText(mName);
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
         }
