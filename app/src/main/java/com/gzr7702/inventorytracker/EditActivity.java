@@ -14,14 +14,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.gzr7702.inventorytracker.data.InventoryContract;
+
+import butterknife.ButterKnife;
+
+import static com.gzr7702.inventorytracker.R.id.quantity;
 
 
 /*
@@ -41,6 +47,9 @@ public class EditActivity extends AppCompatActivity implements
 
     // Boolean flag that keeps track of whether the item has been edited
     private boolean mItemHasChanged = false;
+
+    // Set quantity so it can be accessed classwide
+    private int mQuantity = 0;
 
      // OnTouchListener that listens for any user touches on a View, implying that they are modifying
      // the view,
@@ -73,15 +82,18 @@ public class EditActivity extends AppCompatActivity implements
         } else {
             setTitle(getString(R.string.edit_new_item_header));
 
-            // Display the current values in the editor
+            // start loader
             getLoaderManager().initLoader(EXISTING_INVENTORY_LOADER, null, this);
         }
 
         // Find all relevant views that we will need to read user input from
         // TODO: add thumbnail
+        // TODO: add order button to this
         mNameEditText = (EditText) findViewById(R.id.name_edit_text);
         mQuantityEditText = (EditText) findViewById(R.id.quantity_edit_text);
         mPriceEditText = (EditText) findViewById(R.id.price_edit_text);
+        Button incrementButton = (Button) findViewById(R.id.increment_button);
+        Button decrementButton = (Button) findViewById(R.id.decrement_button);
 
         // Setup OnTouchListeners on all the input fields, so we can determine if the user
         // has touched or modified them. This will let us know if there are unsaved changes
@@ -89,6 +101,22 @@ public class EditActivity extends AppCompatActivity implements
         mNameEditText.setOnTouchListener(mTouchListener);
         mQuantityEditText.setOnTouchListener(mTouchListener);
         mPriceEditText.setOnTouchListener(mTouchListener);
+
+        incrementButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                mQuantity++;
+                mQuantityEditText.setText(Integer.toString(mQuantity));
+            }
+        });
+
+        decrementButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                mQuantity--;
+                mQuantityEditText.setText(Integer.toString(mQuantity));
+            }
+        });
     }
 
     /**
@@ -108,8 +136,6 @@ public class EditActivity extends AppCompatActivity implements
         if (mCurrentItemUri == null &&
             TextUtils.isEmpty(nameString) && TextUtils.isEmpty(quantityString) &&
             TextUtils.isEmpty(priceString)) {
-            // Since no fields were modified, we can return early without creating a new pet.
-            // No need to create ContentValues and no need to do any ContentProvider operations.
             return;
         }
 
@@ -133,7 +159,7 @@ public class EditActivity extends AppCompatActivity implements
                         Toast.LENGTH_SHORT).show();
             }
         } else {
-            // Otherwise this is an existing item, so update the item with content URI: mCurrentPetUri
+            // Otherwise this is an existing item, so update the item with content URI: mCurrentItemUri
             // and pass in the new ContentValues.
             int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
 
@@ -163,7 +189,7 @@ public class EditActivity extends AppCompatActivity implements
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        // If this is a new pet, hide the "Delete" menu item.
+        // If this is a new item , hide the "Delete" menu item.
         if (mCurrentItemUri== null) {
             MenuItem menuItem = menu.findItem(R.id.action_delete);
             menuItem.setVisible(false);
@@ -235,7 +261,7 @@ public class EditActivity extends AppCompatActivity implements
 
         // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this,   // Parent activity context
-                mCurrentItemUri,         // Query the content URI for the current pet
+                mCurrentItemUri,         // Query the content URI for the current item
                 projection,             // Columns to include in the resulting Cursor
                 null,                   // No selection clause
                 null,                   // No selection arguments
@@ -252,19 +278,20 @@ public class EditActivity extends AppCompatActivity implements
         // Proceed with moving to the first row of the cursor and reading data from it
         // (This should be the only row in the cursor)
         if (cursor.moveToFirst()) {
-            // Find the columns of pet attributes that we're interested in
+            // Find the columns of item attributes that we're interested in
             int nameColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
             int quantityColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_QUANTITY);
             int priceColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
 
             // Extract out the value from the Cursor for the given column index
             String name = cursor.getString(nameColumnIndex);
-            int quantity = cursor.getInt(quantityColumnIndex);
+            mQuantity = cursor.getInt(quantityColumnIndex);
             double price = cursor.getDouble(priceColumnIndex);
 
             // Update the views on the screen with the values from the database
             mNameEditText.setText(name);
-            mQuantityEditText.setText(Integer.toString(quantity));
+            mQuantityEditText.setText(Integer.toString(mQuantity));
+            mPriceEditText.setText("$" + Double.toString(price));
         }
     }
 

@@ -59,4 +59,14 @@
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/sale_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:text="@string/sale_button_text"/>
+
 </LinearLayout>

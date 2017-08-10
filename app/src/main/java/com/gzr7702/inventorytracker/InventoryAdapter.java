@@ -2,21 +2,24 @@ package com.gzr7702.inventorytracker;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gzr7702.inventorytracker.data.InventoryContract;
 
 public class InventoryAdapter extends CursorAdapter {
+    private ReduceQuantity mListener;
 
-    public InventoryAdapter(Context context, Cursor cursor) {
+    public InventoryAdapter(Context context, Cursor cursor, ReduceQuantity listener) {
         super(context, cursor);
+        mListener = listener;
     }
 
     @Override
@@ -25,7 +28,7 @@ public class InventoryAdapter extends CursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, final Context context, final Cursor cursor) {
 
         // Find individual views that we want to modify in the list item layout
         // TODO: add butterknife
@@ -33,6 +36,7 @@ public class InventoryAdapter extends CursorAdapter {
         TextView quantityTextView = (TextView) view.findViewById(R.id.quantity);
         TextView priceTextView = (TextView) view.findViewById(R.id.price);
         ImageView picTextView = (ImageView) view.findViewById(R.id.thumbnail);
+        Button saleButton = (Button) view.findViewById(R.id.sale_button);
 
         // Find the columns of pet attributes that we're interested in
         int nameColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
@@ -42,25 +46,34 @@ public class InventoryAdapter extends CursorAdapter {
 
         // Read the pet attributes from the Cursor for the current pet
         String itemName = cursor.getString(nameColumnIndex);
-        int quantitiy = cursor.getInt(quantityColumnIndex);
+        final int quantity = cursor.getInt(quantityColumnIndex);
         float price = cursor.getFloat(priceColumnIndex);
         int thumbnail = cursor.getInt(thumbnailColumnIndex);
 
         // Update the TextViews with the attributes for the current pet
         nameTextView.setText(itemName);
-        String quantityString = String.valueOf(quantitiy);
+        final String quantityString = String.valueOf(quantity);
         quantityTextView.setText(quantityString);
-        String priceString = String.valueOf(price);
+        final String priceString = "$" + String.valueOf(price);
         priceTextView.setText(priceString);
 
         if (thumbnail == 0) {
-            //TODO: change to generic picture
             picTextView.setImageResource(R.drawable.item);
         } else {
             //TODO: change to pic from camera
             picTextView.setImageResource(R.drawable.item);
         }
+
+        saleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (quantity > 0) {
+                    mListener.reduce(quantity, cursor);
+                } else {
+                    String message = "You have no items left to sell!";
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 }
-
-

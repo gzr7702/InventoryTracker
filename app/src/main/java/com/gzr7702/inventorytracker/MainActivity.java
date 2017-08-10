@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.gzr7702.inventorytracker.data.InventoryContract.InventoryEntry;
+import com.gzr7702.inventorytracker.ReduceQuantity;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -50,7 +51,16 @@ public class MainActivity extends AppCompatActivity implements
         View emptyStateView = findViewById(R.id.empty_view);
         mListView.setEmptyView(emptyStateView);
 
-        mAdapter = new InventoryAdapter(this, null);
+        ReduceQuantity listener = new ReduceQuantity() {
+            @Override
+            public void reduce(int quantity, Cursor cursor) {
+                Log.v("Main", "quantitiy " + quantity);
+                int newQuantity = quantity - 1;
+
+            }
+        };
+
+        mAdapter = new InventoryAdapter(this, null, listener);
         mListView.setAdapter(mAdapter);
 
         // ListView Item Click Listener
@@ -75,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements
     // Delete all data
     private void deleteAllItems() {
         int rowsDeleted = getContentResolver().delete(InventoryEntry.CONTENT_URI, null, null);
-        Log.v("MainActivity", rowsDeleted + " rows deleted from pet database");
+        Log.v("MainActivity", rowsDeleted + " rows deleted from inventory database");
     }
 
     @Override
@@ -124,4 +134,5 @@ public class MainActivity extends AppCompatActivity implements
     public void onLoaderReset(Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
     }
+
 }

@@ -5,6 +5,33 @@
     <string name="empty_view_header">There are no items in your inventory!</string>
     <string name="empty_view_string">Click the floating button to please enter some</string>
     <string name="delete_button_text">Delete all items</string>
+    <string name="sale_button_text">Sale</string>
     <string name="add_button_text">Add Item</string>
-    <string name="add_photo_text">Click to add photo</string>
+    <string name="add_photo_text">Add Photo</string>
+    <string name="order_text">Order</string>
+
+    <string name="name_label">Name of Item</string>
+    <string name="quantity_label">Quantity</string>
+    <string name="price_label">Price</string>
+    <string name="increment_button_text">+</string>
+    <string name="decrement_button_text">-</string>
+
+    <string name="add_new_item_header">Add New Item</string>
+    <string name="edit_new_item_header">Edit Item</string>
+    <string name="insert_item_failed">Item was not inserted!</string>
+    <string name="insert_item_successful">Item was successfully inserted!</string>
+    <string name="update_item_failed">Item was not updated successfully!</string>
+    <string name="update_item_successful">Item was updated successfully!</string>
+    <string name="delete_item_failed">Item was not deleted successfully!</string>
+    <string name="delete_item_successful">Item was deleted successfully!</string>
+
+    <string name="unsaved_changes_message">Discard your changes?</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep Editing</string>
+    <string name="delete_dialog_message">Delete this item?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
 </resources>
