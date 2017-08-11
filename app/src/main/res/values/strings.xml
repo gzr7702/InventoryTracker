@@ -8,9 +8,11 @@
     <string name="sale_button_text">Sale</string>
     <string name="add_button_text">Add Item</string>
     <string name="add_photo_text">Add Photo</string>
-    <string name="order_text">Order</string>
+    <string name="order_text">Order More</string>
 
-    <string name="name_label">Name of Item</string>
+    <string name="company_label">Company Name</string>
+    <string name="phone_label">Phone Number</string>
+    <string name="item_name_label">Name of Item</string>
     <string name="quantity_label">Quantity</string>
     <string name="price_label">Price</string>
     <string name="increment_button_text">+</string>

@@ -28,6 +28,7 @@
             android:name=".data.InventoryProvider"
             android:authorities="com.gzr7702.inventorytracker"
             android:exported="false"/>
+        <uses-permission android:name="android.permission.CALL_PHONE" />
     </application>
 
 </manifest>

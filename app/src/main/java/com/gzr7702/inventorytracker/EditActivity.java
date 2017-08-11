@@ -27,9 +27,6 @@ import com.gzr7702.inventorytracker.data.InventoryContract;
 
 import butterknife.ButterKnife;
 
-import static com.gzr7702.inventorytracker.R.id.quantity;
-
-
 /*
     This activity is used to add a new inventory item
  */
@@ -39,17 +36,18 @@ public class EditActivity extends AppCompatActivity implements
 
     private static final int EXISTING_INVENTORY_LOADER = 0;
     private Uri mCurrentItemUri;
-    private EditText mNameEditText;
 
+    private EditText mCompanyEditText;
+    private EditText mPhoneEditText;
+    private EditText mItemEditText;
     private EditText mQuantityEditText;
     private EditText mPriceEditText;
-    // TODO: add dialog to change photo here?
 
     // Boolean flag that keeps track of whether the item has been edited
     private boolean mItemHasChanged = false;
 
     // Set vars that need to be accessed classwide
-    private String mName = "";
+    private String mPhoneNumber = "";
     private int mQuantity = 0;
 
      // OnTouchListener that listens for any user touches on a View, implying that they are modifying
@@ -73,34 +71,24 @@ public class EditActivity extends AppCompatActivity implements
         Intent intent = getIntent();
         mCurrentItemUri = intent.getData();
 
-        // If the intent DOES NOT contain an item content URI, then we know that we are
-        // creating a new one.
-        if (mCurrentItemUri == null) {
-            setTitle(getString(R.string.add_new_item_header));
-
-            // "Delete" menu option can be hidden.
-            invalidateOptionsMenu();
-        } else {
-            setTitle(getString(R.string.edit_new_item_header));
-
-            // start loader
-            getLoaderManager().initLoader(EXISTING_INVENTORY_LOADER, null, this);
-        }
-
         // Find all relevant views that we will need to read user input from
-        // TODO: add thumbnail
-        // TODO: add order button to this
-        mNameEditText = (EditText) findViewById(R.id.name_edit_text);
+        mCompanyEditText = (EditText) findViewById(R.id.company_edit_text);
+        mPhoneEditText = (EditText) findViewById(R.id.phone_edit_text);
+        mItemEditText = (EditText) findViewById(R.id.name_edit_text);
         mQuantityEditText = (EditText) findViewById(R.id.quantity_edit_text);
         mPriceEditText = (EditText) findViewById(R.id.price_edit_text);
         Button incrementButton = (Button) findViewById(R.id.increment_button);
         Button decrementButton = (Button) findViewById(R.id.decrement_button);
+        Button addPhotoButton = (Button) findViewById(R.id.photo_button);
         Button orderButton = (Button) findViewById(R.id.order_button);
+
 
         // Setup OnTouchListeners on all the input fields, so we can determine if the user
         // has touched or modified them. This will let us know if there are unsaved changes
         // or not, if the user tries to leave the editor without saving.
-        mNameEditText.setOnTouchListener(mTouchListener);
+        mCompanyEditText.setOnTouchListener(mTouchListener);
+        mPhoneEditText.setOnTouchListener(mTouchListener);
+        mItemEditText.setOnTouchListener(mTouchListener);
         mQuantityEditText.setOnTouchListener(mTouchListener);
         mPriceEditText.setOnTouchListener(mTouchListener);
 
@@ -120,44 +108,73 @@ public class EditActivity extends AppCompatActivity implements
             }
         });
 
-        orderButton.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view){
-               String subject = mName + " Order";
-               String body = "Please send an order of the above mentioned item in the quantity of ";
-               Intent intent = new Intent(Intent.ACTION_SENDTO);
-               intent.setData(Uri.parse("mailto:"));
-               intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-               intent.putExtra(Intent.EXTRA_TEXT, body);
-               if (intent.resolveActivity(getPackageManager()) != null) {
-                   startActivity(intent);
-               }
-           }
+        addPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                // TODO: make this functional for photo
+                Log.v("EditActivity", "Start dialog to add thumbnail");
+            }
         });
+
+        orderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + mPhoneNumber));
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                }
+            }
+        });
+
+        // If the intent DOES NOT contain an item content URI, then we know that we are
+        // creating a new one.
+        if (mCurrentItemUri == null) {
+            Log.v("EditActivity", "New Item");
+            setTitle(getString(R.string.add_new_item_header));
+
+            // "Delete" menu option can be hidden.
+            invalidateOptionsMenu();
+        } else {
+            // Edit current itme, show proper title and order button
+            Log.v("EditActivity", "Edit Item");
+            setTitle(getString(R.string.edit_new_item_header));
+            orderButton.setVisibility(View.VISIBLE);
+            // start loader
+            getLoaderManager().initLoader(EXISTING_INVENTORY_LOADER, null, this);
+        }
     }
 
     /**
      * Get user input from editor and save into database.
      */
     private void saveItem() {
-        // TODO: add thumbnail to this
+        // TODO: add thumbnail location to this
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
-        String nameString = mNameEditText.getText().toString().trim();
+        String companyNameString = mCompanyEditText.getText().toString().trim();
+        String phoneNumberString = mPhoneEditText.getText().toString().trim();
+        String itemString = mItemEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
-        String priceString = mPriceEditText.getText().toString().trim();
+        String originalPriceString = mPriceEditText.getText().toString().trim();
+        StringBuilder sb = new StringBuilder(originalPriceString);
+        String priceString = sb.deleteCharAt(0).toString();
+        Log.v("EditActivity", "price: " + priceString);
 
-        // TODO: add input checking here? ===================================================
+
         // Check if this is supposed to be a new item
         // and check if all the fields in the editor are blank
         if (mCurrentItemUri == null &&
-            TextUtils.isEmpty(nameString) && TextUtils.isEmpty(quantityString) &&
+            TextUtils.isEmpty(companyNameString) && TextUtils.isEmpty(phoneNumberString) &&
+            TextUtils.isEmpty(itemString) && TextUtils.isEmpty(quantityString) &&
             TextUtils.isEmpty(priceString)) {
             return;
         }
 
         ContentValues values = new ContentValues();
-        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, nameString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_COMPANY_NAME, companyNameString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_PHONE_NUMBER, phoneNumberString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, itemString);
         values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, quantityString);
         values.put(InventoryContract.InventoryEntry.COLUMN_PRICE, priceString);
 
@@ -272,6 +289,8 @@ public class EditActivity extends AppCompatActivity implements
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String[] projection = {
                 InventoryContract.InventoryEntry._ID,
+                InventoryContract.InventoryEntry.COLUMN_COMPANY_NAME,
+                InventoryContract.InventoryEntry.COLUMN_PHONE_NUMBER,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_NAME,
                 InventoryContract.InventoryEntry.COLUMN_QUANTITY,
                 InventoryContract.InventoryEntry.COLUMN_PRICE};
@@ -296,17 +315,23 @@ public class EditActivity extends AppCompatActivity implements
         // (This should be the only row in the cursor)
         if (cursor.moveToFirst()) {
             // Find the columns of item attributes that we're interested in
-            int nameColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
+            int companyColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_COMPANY_NAME);
+            int phoneColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PHONE_NUMBER);
+            int itemColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
             int quantityColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_QUANTITY);
             int priceColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
 
             // Extract out the value from the Cursor for the given column index
-            mName = cursor.getString(nameColumnIndex);
+            String companyName = cursor.getString(companyColumnIndex);
+            mPhoneNumber = cursor.getString(phoneColumnIndex);
+            String itemName = cursor.getString(itemColumnIndex);
             mQuantity = cursor.getInt(quantityColumnIndex);
             double price = cursor.getDouble(priceColumnIndex);
 
             // Update the views on the screen with the values from the database
-            mNameEditText.setText(mName);
+            mCompanyEditText.setText(companyName);
+            mPhoneEditText.setText(mPhoneNumber);
+            mItemEditText.setText(itemName);
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
         }
@@ -315,7 +340,9 @@ public class EditActivity extends AppCompatActivity implements
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         // If the loader is invalidated, clear out all the data from the input fields.
-        mNameEditText.setText("");
+        mCompanyEditText.setText("");
+        mPhoneEditText.setText("");
+        mItemEditText.setText("");
         mQuantityEditText.setText("");
         mPriceEditText.setText("");
     }

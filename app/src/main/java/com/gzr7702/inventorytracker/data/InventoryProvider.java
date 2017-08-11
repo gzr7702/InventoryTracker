@@ -83,9 +83,29 @@ public class InventoryProvider extends ContentProvider {
 
     private Uri insertItem(Uri uri, ContentValues values) {
 
+        String companyName = values.getAsString(InventoryEntry.COLUMN_COMPANY_NAME);
+        if (companyName == null) {
+            throw new IllegalArgumentException("Item requires a company");
+        }
+
+        String phoneNumber = values.getAsString(InventoryEntry.COLUMN_PHONE_NUMBER);
+        if (phoneNumber == null || !android.util.Patterns.PHONE.matcher(phoneNumber).matches()) {
+            throw new IllegalArgumentException("Item requires a phone number in proper format");
+        }
+
         String itemName = values.getAsString(InventoryEntry.COLUMN_ITEM_NAME);
         if (itemName == null) {
             throw new IllegalArgumentException("Item requires a name");
+        }
+
+        Integer quantity = values.getAsInteger(InventoryEntry.COLUMN_QUANTITY);
+        if (quantity != null && quantity < 0) {
+            throw new IllegalArgumentException("You cannot have a negative quantity");
+        }
+
+        String price = values.getAsString(InventoryEntry.COLUMN_PRICE);
+        if (price == null) {
+            throw new IllegalArgumentException("Item requires a price");
         }
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();

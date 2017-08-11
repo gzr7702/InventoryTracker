@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void reduce(int quantity, Cursor cursor) {
                 Log.v("Main", "quantitiy " + quantity);
+                //TODO: add new quant to database
                 int newQuantity = quantity - 1;
 
             }
