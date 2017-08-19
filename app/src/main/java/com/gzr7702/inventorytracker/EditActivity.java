@@ -25,6 +25,8 @@ import android.widget.Toast;
 
 import com.gzr7702.inventorytracker.data.InventoryContract;
 
+import java.util.regex.Pattern;
+
 import butterknife.ButterKnife;
 
 /*
@@ -43,12 +45,14 @@ public class EditActivity extends AppCompatActivity implements
     private EditText mQuantityEditText;
     private EditText mPriceEditText;
 
+    String mCompanyName = "";
+    String mPhoneNumber = "";
+    String mItem = "";
+    int mQuantity = 0;
+    double mPrice = 0;
+
     // Boolean flag that keeps track of whether the item has been edited
     private boolean mItemHasChanged = false;
-
-    // Set vars that need to be accessed classwide
-    private String mPhoneNumber = "";
-    private int mQuantity = 0;
 
      // OnTouchListener that listens for any user touches on a View, implying that they are modifying
      // the view,
@@ -146,22 +150,45 @@ public class EditActivity extends AppCompatActivity implements
     }
 
     /**
+     * Validate that data in the form is good
+     * @return boolean
+     */
+    private Boolean dataValidated() {
+
+        Log.v("EditActivity", "in saveItem()");
+
+        // Read from input fields
+        // Use trim to eliminate leading or trailing white space
+        mCompanyName = mCompanyEditText.getText().toString().trim();
+        mPhoneNumber = mPhoneEditText.getText().toString().trim();
+        mItem = mItemEditText.getText().toString().trim();
+        String quantityString = mQuantityEditText.getText().toString().trim();
+        String priceString = mPriceEditText.getText().toString().trim();
+        StringBuilder sb = new StringBuilder(priceString);
+        mPrice = Double.parseDouble(sb.deleteCharAt(0).toString());
+
+        if (!Pattern.matches("\\d{3}-\\d{4}", mPhoneNumber)) {
+            String message = "phone number " + mPhoneNumber + " no good";
+            Log.v("EditActivity", "phone number no good");
+            mPhoneEditText.setText("");
+            return false;
+        }
+
+        // TODO: validate the rest of the data ==========
+        return true;
+
+    }
+
+    /**
      * Get user input from editor and save into database.
      */
     private void saveItem() {
-        // TODO: add thumbnail location to this
-        // Read from input fields
-        // Use trim to eliminate leading or trailing white space
+
         String companyNameString = mCompanyEditText.getText().toString().trim();
         String phoneNumberString = mPhoneEditText.getText().toString().trim();
         String itemString = mItemEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
-        String originalPriceString = mPriceEditText.getText().toString().trim();
-        StringBuilder sb = new StringBuilder(originalPriceString);
-        String priceString = sb.deleteCharAt(0).toString();
-        Log.v("EditActivity", "price: " + priceString);
-
-
+        String priceString = mPriceEditText.getText().toString().trim();
         // Check if this is supposed to be a new item
         // and check if all the fields in the editor are blank
         if (mCurrentItemUri == null &&
@@ -172,11 +199,11 @@ public class EditActivity extends AppCompatActivity implements
         }
 
         ContentValues values = new ContentValues();
-        values.put(InventoryContract.InventoryEntry.COLUMN_COMPANY_NAME, companyNameString);
-        values.put(InventoryContract.InventoryEntry.COLUMN_PHONE_NUMBER, phoneNumberString);
-        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, itemString);
-        values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, quantityString);
-        values.put(InventoryContract.InventoryEntry.COLUMN_PRICE, priceString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_COMPANY_NAME, mCompanyName);
+        values.put(InventoryContract.InventoryEntry.COLUMN_PHONE_NUMBER, mPhoneNumber);
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, mItem);
+        values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, mQuantity);
+        values.put(InventoryContract.InventoryEntry.COLUMN_PRICE, mPrice);
 
 
         // check if this is a new or existing item to update
@@ -237,9 +264,23 @@ public class EditActivity extends AppCompatActivity implements
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                saveItem();
-                finish();
-                return true;
+                if (!dataValidated()) {
+                    DialogInterface.OnClickListener invalidDataClickListener =
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    // User clicked "Ok" button, go back to our activity.
+                                }
+                            };
+
+                    // Show a dialog that notifies the user that they entered bad data
+                    showInvalidDataDialog(invalidDataClickListener);
+                    return true;
+                } else {
+                    saveItem();
+                    finish();
+                    return true;
+                }
             case R.id.action_delete:
                 showDeleteConfirmationDialog();
                 return true;
@@ -359,6 +400,18 @@ public class EditActivity extends AppCompatActivity implements
                 }
             }
         });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void showInvalidDataDialog(
+            DialogInterface.OnClickListener invalidDataClickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // TODO: move strings to resource folder
+        // Add specific bad field
+        builder.setMessage("You have invalid data!");
+        builder.setNeutralButton("Ok", invalidDataClickListener);
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();

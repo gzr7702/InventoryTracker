@@ -12,6 +12,8 @@ import android.util.Log;
 
 import com.gzr7702.inventorytracker.data.InventoryContract.InventoryEntry;
 
+import java.util.regex.Pattern;
+
 /**
  * Content Provider for Inventory DB
  */
@@ -89,7 +91,7 @@ public class InventoryProvider extends ContentProvider {
         }
 
         String phoneNumber = values.getAsString(InventoryEntry.COLUMN_PHONE_NUMBER);
-        if (phoneNumber == null || !android.util.Patterns.PHONE.matcher(phoneNumber).matches()) {
+        if (phoneNumber == null || !Pattern.matches("\\d{3}-\\d{4}", phoneNumber)) {
             throw new IllegalArgumentException("Item requires a phone number in proper format");
         }
 
