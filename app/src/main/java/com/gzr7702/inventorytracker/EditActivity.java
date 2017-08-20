@@ -151,9 +151,9 @@ public class EditActivity extends AppCompatActivity implements
 
     /**
      * Validate that data in the form is good
-     * @return boolean
+     * @return "valid" if data is valid, or invalid field if not
      */
-    private Boolean dataValidated() {
+    private String checkData() {
 
         Log.v("EditActivity", "in saveItem()");
 
@@ -163,19 +163,26 @@ public class EditActivity extends AppCompatActivity implements
         mPhoneNumber = mPhoneEditText.getText().toString().trim();
         mItem = mItemEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
-        String priceString = mPriceEditText.getText().toString().trim();
-        StringBuilder sb = new StringBuilder(priceString);
-        mPrice = Double.parseDouble(sb.deleteCharAt(0).toString());
-
-        if (!Pattern.matches("\\d{3}-\\d{4}", mPhoneNumber)) {
-            String message = "phone number " + mPhoneNumber + " no good";
-            Log.v("EditActivity", "phone number no good");
-            mPhoneEditText.setText("");
-            return false;
+        String originalPriceString = mPriceEditText.getText().toString().trim();
+        StringBuilder sb = new StringBuilder(originalPriceString);
+        String priceString = originalPriceString;
+        // Check if dollar sign is in the price field
+        if (sb.charAt(0) == '$') {
+            priceString = sb.deleteCharAt(0).toString();
         }
 
-        // TODO: validate the rest of the data ==========
-        return true;
+        if (!Pattern.matches("\\d{3}-\\d{4}", mPhoneNumber)) {
+            return "Phone Number";
+        } else if (!Pattern.matches("\\d+(?:\\.\\d+)?", quantityString)) {
+            // TODO: check for negative
+            return "Quantity";
+        } else if (!Pattern.matches("[0-9]+([,.][0-9]{1,2})?", priceString)) {
+            // TODO: check for negative
+            return "Price";
+        }
+        mPrice = Double.parseDouble(priceString);
+
+        return "valid";
 
     }
 
@@ -184,13 +191,14 @@ public class EditActivity extends AppCompatActivity implements
      */
     private void saveItem() {
 
+        // Check if this is supposed to be a new item
+        // and check if all the fields in the editor are blank
         String companyNameString = mCompanyEditText.getText().toString().trim();
         String phoneNumberString = mPhoneEditText.getText().toString().trim();
         String itemString = mItemEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
-        // Check if this is supposed to be a new item
-        // and check if all the fields in the editor are blank
+
         if (mCurrentItemUri == null &&
             TextUtils.isEmpty(companyNameString) && TextUtils.isEmpty(phoneNumberString) &&
             TextUtils.isEmpty(itemString) && TextUtils.isEmpty(quantityString) &&
@@ -264,7 +272,8 @@ public class EditActivity extends AppCompatActivity implements
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                if (!dataValidated()) {
+                String dataField = checkData();
+                if (dataField != "valid") {
                     DialogInterface.OnClickListener invalidDataClickListener =
                             new DialogInterface.OnClickListener() {
                                 @Override
@@ -274,7 +283,7 @@ public class EditActivity extends AppCompatActivity implements
                             };
 
                     // Show a dialog that notifies the user that they entered bad data
-                    showInvalidDataDialog(invalidDataClickListener);
+                    showInvalidDataDialog(dataField, invalidDataClickListener);
                     return true;
                 } else {
                     saveItem();
@@ -405,13 +414,11 @@ public class EditActivity extends AppCompatActivity implements
         alertDialog.show();
     }
 
-    private void showInvalidDataDialog(
-            DialogInterface.OnClickListener invalidDataClickListener) {
+    private void showInvalidDataDialog(String field, DialogInterface.OnClickListener invalidDataClickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        // TODO: move strings to resource folder
-        // Add specific bad field
-        builder.setMessage("You have invalid data!");
-        builder.setNeutralButton("Ok", invalidDataClickListener);
+        String message = "The " + field + " field is invalid";
+        builder.setMessage(message);
+        builder.setNeutralButton(R.string.dialog_button_string, invalidDataClickListener);
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();

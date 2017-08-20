@@ -33,6 +33,7 @@
     <string name="delete_dialog_message">Delete this item?</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="dialog_button_string">Ok</string>
 
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
