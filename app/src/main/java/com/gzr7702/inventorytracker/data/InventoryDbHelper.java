@@ -12,7 +12,7 @@ import com.gzr7702.inventorytracker.data.InventoryContract.InventoryEntry;
 
 public class InventoryDbHelper extends SQLiteOpenHelper{
     static final String DATABASE_NAME = "inventory.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     public InventoryDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -27,7 +27,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
                 InventoryEntry.COLUMN_PHONE_NUMBER+ " TEXT NOT NULL, " +
                 InventoryEntry.COLUMN_QUANTITY + " INTEGER NOT NULL DEFAULT 0, " +
                 InventoryEntry.COLUMN_PRICE + " DOUBLE NOT NULL DEFAULT 0.00, " +
-                InventoryEntry.COLUMN_THUMBNAIL + " INTEGER NOT NULL DEFAULT 0" +
+                InventoryEntry.COLUMN_PHOTO + " TEXT " +
                 " );";
 
         sqLiteDatabase.execSQL(SQL_CREATE_INVENTORY_TABLE);

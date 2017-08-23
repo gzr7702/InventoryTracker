@@ -39,6 +39,6 @@ public class InventoryContract {
         public static final String COLUMN_PHONE_NUMBER = "phone_number";
         public static final String COLUMN_QUANTITY = "quantity";
         public static final String COLUMN_PRICE = "price";
-        public static final String COLUMN_THUMBNAIL = "thumbnail";
+        public static final String COLUMN_PHOTO = "photo";
     }
 }

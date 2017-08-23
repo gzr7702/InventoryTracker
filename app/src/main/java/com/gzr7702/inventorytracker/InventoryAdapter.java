@@ -2,6 +2,8 @@ package com.gzr7702.inventorytracker;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gzr7702.inventorytracker.data.InventoryContract;
+
+import java.io.File;
 
 public class InventoryAdapter extends CursorAdapter {
     private ReduceQuantity mListener;
@@ -42,13 +46,13 @@ public class InventoryAdapter extends CursorAdapter {
         int nameColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
         int quantityColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_QUANTITY);
         int priceColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
-        int thumbnailColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_THUMBNAIL);
+        int thumbnailColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PHOTO);
 
         // Read the pet attributes from the Cursor for the current pet
         String itemName = cursor.getString(nameColumnIndex);
         final int quantity = cursor.getInt(quantityColumnIndex);
         float price = cursor.getFloat(priceColumnIndex);
-        int thumbnail = cursor.getInt(thumbnailColumnIndex);
+        String thumbnail = cursor.getString(thumbnailColumnIndex);
 
         // Update the TextViews with the attributes for the current pet
         nameTextView.setText(itemName);
@@ -57,11 +61,18 @@ public class InventoryAdapter extends CursorAdapter {
         final String priceString = "$" + String.valueOf(price);
         priceTextView.setText(priceString);
 
-        if (thumbnail == 0) {
+        if (thumbnail == null) {
             picTextView.setImageResource(R.drawable.item);
         } else {
-            //TODO: change to pic from camera
-            picTextView.setImageResource(R.drawable.item);
+            // TODO: not displaying photo
+            String message = "path: " + thumbnail;
+            Log.v("InventoryAdapter", message);
+            File imgFile = new  File(thumbnail);
+
+            if(imgFile.exists()){
+                Bitmap bitmapPhoto = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                picTextView.setImageBitmap(bitmapPhoto);
+            }
         }
 
         saleButton.setOnClickListener(new View.OnClickListener() {

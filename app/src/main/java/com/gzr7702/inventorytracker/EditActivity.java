@@ -6,9 +6,15 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,10 +27,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.gzr7702.inventorytracker.data.InventoryContract;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 import butterknife.ButterKnife;
@@ -36,7 +47,12 @@ import butterknife.ButterKnife;
 public class EditActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final String TAG = "EditActvity";
     private static final int EXISTING_INVENTORY_LOADER = 0;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+    static final int REQUEST_TAKE_PHOTO = 1;
+
+    String mCurrentPhotoPath;
     private Uri mCurrentItemUri;
 
     private EditText mCompanyEditText;
@@ -44,12 +60,14 @@ public class EditActivity extends AppCompatActivity implements
     private EditText mItemEditText;
     private EditText mQuantityEditText;
     private EditText mPriceEditText;
+    private ImageView mPictureView;
 
     String mCompanyName = "";
     String mPhoneNumber = "";
     String mItem = "";
     int mQuantity = 0;
     double mPrice = 0;
+    String mPhotoPath = "";
 
     // Boolean flag that keeps track of whether the item has been edited
     private boolean mItemHasChanged = false;
@@ -81,6 +99,7 @@ public class EditActivity extends AppCompatActivity implements
         mItemEditText = (EditText) findViewById(R.id.name_edit_text);
         mQuantityEditText = (EditText) findViewById(R.id.quantity_edit_text);
         mPriceEditText = (EditText) findViewById(R.id.price_edit_text);
+        mPictureView = (ImageView) findViewById(R.id.photo_view);
         Button incrementButton = (Button) findViewById(R.id.increment_button);
         Button decrementButton = (Button) findViewById(R.id.decrement_button);
         Button addPhotoButton = (Button) findViewById(R.id.photo_button);
@@ -96,6 +115,7 @@ public class EditActivity extends AppCompatActivity implements
         mQuantityEditText.setOnTouchListener(mTouchListener);
         mPriceEditText.setOnTouchListener(mTouchListener);
 
+        // increment and decrement button callbacks
         incrementButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
@@ -112,14 +132,44 @@ public class EditActivity extends AppCompatActivity implements
             }
         });
 
+        // Photo button callback
         addPhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-                // TODO: make this functional for photo
-                Log.v("EditActivity", "Start dialog to add thumbnail");
+
+                // Check for camera, show toast if there is none, launch intent if there is
+                PackageManager pm = getBaseContext().getPackageManager();
+                if (!pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    String message = "Sorry, you need a camaera on your device to add a photo.";
+                    Toast.makeText(getBaseContext(), message, Toast.LENGTH_LONG).show();
+                } else {
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    // Ensure that there's a camera activity to handle the intent
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        // Create the File where the photo should go
+                        File photoFile = null;
+                        try {
+                            photoFile = createImageFile();
+                        } catch (IOException ex) {
+                            // Error occurred while creating the File
+                            Toast.makeText(getBaseContext(),
+                                    "Something is awry, you cannot take a photo", Toast.LENGTH_LONG).show();
+                        }
+                        // Continue only if the File was successfully created
+                        if (photoFile != null) {
+                            Uri photoURI = FileProvider.getUriForFile(getBaseContext(),
+                                    "com.example.android.fileprovider",
+                                    photoFile);
+                            mPhotoPath = photoFile.getPath();
+                            startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                        }
+                    }
+
+                }
             }
         });
 
+        // Order more button that takes us to the phone w/proper phone number
         orderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
@@ -131,21 +181,54 @@ public class EditActivity extends AppCompatActivity implements
             }
         });
 
+        // Here's where we determine if this is a new itme, or an edited item
         // If the intent DOES NOT contain an item content URI, then we know that we are
         // creating a new one.
         if (mCurrentItemUri == null) {
-            Log.v("EditActivity", "New Item");
+            Log.v(TAG, "New Item");
             setTitle(getString(R.string.add_new_item_header));
 
             // "Delete" menu option can be hidden.
             invalidateOptionsMenu();
         } else {
             // Edit current itme, show proper title and order button
-            Log.v("EditActivity", "Edit Item");
+            Log.v(TAG, "Edit Item");
             setTitle(getString(R.string.edit_new_item_header));
             orderButton.setVisibility(View.VISIBLE);
             // start loader
             getLoaderManager().initLoader(EXISTING_INVENTORY_LOADER, null, this);
+        }
+    }
+
+    /*
+        Create the file that is an image
+     */
+    private File createImageFile() throws IOException {
+        // Create an image file name using date stamp to be unique
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    /*
+       Get the results of taking a photo
+    */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.v(TAG, "in onActivityResult");
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            mPictureView.setImageBitmap(imageBitmap);
         }
     }
 
@@ -155,7 +238,7 @@ public class EditActivity extends AppCompatActivity implements
      */
     private String checkData() {
 
-        Log.v("EditActivity", "in saveItem()");
+        Log.v(TAG, "in saveItem()");
 
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
@@ -174,11 +257,17 @@ public class EditActivity extends AppCompatActivity implements
         if (!Pattern.matches("\\d{3}-\\d{4}", mPhoneNumber)) {
             return "Phone Number";
         } else if (!Pattern.matches("\\d+(?:\\.\\d+)?", quantityString)) {
-            // TODO: check for negative
+            return "Quantity";
+        } else if(Integer.parseInt(quantityString) < 0) {
+            // check for negative
             return "Quantity";
         } else if (!Pattern.matches("[0-9]+([,.][0-9]{1,2})?", priceString)) {
-            // TODO: check for negative
             return "Price";
+        } else if(Float.parseFloat(priceString) < 0) {
+            // check for negative
+            return "Price";
+        } else if (mPhotoPath.isEmpty()) {
+            return "Photo";
         }
         mPrice = Double.parseDouble(priceString);
 
@@ -190,6 +279,7 @@ public class EditActivity extends AppCompatActivity implements
      * Get user input from editor and save into database.
      */
     private void saveItem() {
+        // TODO: not saving or displaying photo =======
 
         // Check if this is supposed to be a new item
         // and check if all the fields in the editor are blank
@@ -212,6 +302,7 @@ public class EditActivity extends AppCompatActivity implements
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, mItem);
         values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, mQuantity);
         values.put(InventoryContract.InventoryEntry.COLUMN_PRICE, mPrice);
+        values.put(InventoryContract.InventoryEntry.COLUMN_PHOTO, mPhotoPath);
 
 
         // check if this is a new or existing item to update
@@ -370,6 +461,7 @@ public class EditActivity extends AppCompatActivity implements
             int itemColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
             int quantityColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_QUANTITY);
             int priceColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
+            int photoColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
 
             // Extract out the value from the Cursor for the given column index
             String companyName = cursor.getString(companyColumnIndex);
@@ -377,6 +469,7 @@ public class EditActivity extends AppCompatActivity implements
             String itemName = cursor.getString(itemColumnIndex);
             mQuantity = cursor.getInt(quantityColumnIndex);
             double price = cursor.getDouble(priceColumnIndex);
+            String photoPath = cursor.getString(photoColumnIndex);
 
             // Update the views on the screen with the values from the database
             mCompanyEditText.setText(companyName);
@@ -384,6 +477,8 @@ public class EditActivity extends AppCompatActivity implements
             mItemEditText.setText(itemName);
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
+            Bitmap bitmapPhoto = BitmapFactory.decodeFile(photoPath);
+            mPictureView.setImageBitmap(bitmapPhoto);
         }
     }
 
