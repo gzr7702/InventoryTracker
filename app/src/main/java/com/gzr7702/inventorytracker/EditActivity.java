@@ -38,8 +38,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-import butterknife.ButterKnife;
-
 /*
     This activity is used to add a new inventory item
  */
@@ -47,7 +45,7 @@ import butterknife.ButterKnife;
 public class EditActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = "EditActvity";
+    private static final String TAG = "EditActivity";
     private static final int EXISTING_INVENTORY_LOADER = 0;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_TAKE_PHOTO = 1;
@@ -104,7 +102,6 @@ public class EditActivity extends AppCompatActivity implements
         Button decrementButton = (Button) findViewById(R.id.decrement_button);
         Button addPhotoButton = (Button) findViewById(R.id.photo_button);
         Button orderButton = (Button) findViewById(R.id.order_button);
-
 
         // Setup OnTouchListeners on all the input fields, so we can determine if the user
         // has touched or modified them. This will let us know if there are unsaved changes
@@ -181,7 +178,7 @@ public class EditActivity extends AppCompatActivity implements
             }
         });
 
-        // Here's where we determine if this is a new itme, or an edited item
+        // Here's where we determine if this is a new item, or an edited item
         // If the intent DOES NOT contain an item content URI, then we know that we are
         // creating a new one.
         if (mCurrentItemUri == null) {
@@ -191,7 +188,7 @@ public class EditActivity extends AppCompatActivity implements
             // "Delete" menu option can be hidden.
             invalidateOptionsMenu();
         } else {
-            // Edit current itme, show proper title and order button
+            // Edit current items, show proper title and order button
             Log.v(TAG, "Edit Item");
             setTitle(getString(R.string.edit_new_item_header));
             orderButton.setVisibility(View.VISIBLE);
@@ -238,8 +235,6 @@ public class EditActivity extends AppCompatActivity implements
      */
     private String checkData() {
 
-        Log.v(TAG, "in saveItem()");
-
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
         mCompanyName = mCompanyEditText.getText().toString().trim();
@@ -279,7 +274,6 @@ public class EditActivity extends AppCompatActivity implements
      * Get user input from editor and save into database.
      */
     private void saveItem() {
-        // TODO: not saving or displaying photo =======
 
         // Check if this is supposed to be a new item
         // and check if all the fields in the editor are blank
@@ -292,7 +286,7 @@ public class EditActivity extends AppCompatActivity implements
         if (mCurrentItemUri == null &&
             TextUtils.isEmpty(companyNameString) && TextUtils.isEmpty(phoneNumberString) &&
             TextUtils.isEmpty(itemString) && TextUtils.isEmpty(quantityString) &&
-            TextUtils.isEmpty(priceString)) {
+            TextUtils.isEmpty(priceString) && mPhotoPath.isEmpty()) {
             return;
         }
 
@@ -307,7 +301,7 @@ public class EditActivity extends AppCompatActivity implements
 
         // check if this is a new or existing item to update
         if (mCurrentItemUri == null) {
-            // New item
+            // This is a new item
             Uri newUri = getContentResolver().insert(InventoryContract.InventoryEntry.CONTENT_URI, values);
 
             // Show a toast message depending on whether or not the insertion was successful.
@@ -434,7 +428,8 @@ public class EditActivity extends AppCompatActivity implements
                 InventoryContract.InventoryEntry.COLUMN_PHONE_NUMBER,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_NAME,
                 InventoryContract.InventoryEntry.COLUMN_QUANTITY,
-                InventoryContract.InventoryEntry.COLUMN_PRICE};
+                InventoryContract.InventoryEntry.COLUMN_PRICE,
+                InventoryContract.InventoryEntry.COLUMN_PHOTO};
 
         // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this,   // Parent activity context
@@ -461,7 +456,7 @@ public class EditActivity extends AppCompatActivity implements
             int itemColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
             int quantityColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_QUANTITY);
             int priceColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
-            int photoColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
+            int photoColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PHOTO);
 
             // Extract out the value from the Cursor for the given column index
             String companyName = cursor.getString(companyColumnIndex);
@@ -469,7 +464,7 @@ public class EditActivity extends AppCompatActivity implements
             String itemName = cursor.getString(itemColumnIndex);
             mQuantity = cursor.getInt(quantityColumnIndex);
             double price = cursor.getDouble(priceColumnIndex);
-            String photoPath = cursor.getString(photoColumnIndex);
+            mPhotoPath = cursor.getString(photoColumnIndex);
 
             // Update the views on the screen with the values from the database
             mCompanyEditText.setText(companyName);
@@ -477,7 +472,8 @@ public class EditActivity extends AppCompatActivity implements
             mItemEditText.setText(itemName);
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
-            Bitmap bitmapPhoto = BitmapFactory.decodeFile(photoPath);
+            Bitmap bitmapPhoto = BitmapFactory.decodeFile(mPhotoPath);
+            Log.v(TAG, "photo path for view " + mPhotoPath);
             mPictureView.setImageBitmap(bitmapPhoto);
         }
     }

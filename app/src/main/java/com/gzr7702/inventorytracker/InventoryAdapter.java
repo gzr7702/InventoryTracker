@@ -1,10 +1,11 @@
 package com.gzr7702.inventorytracker;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +20,11 @@ import com.gzr7702.inventorytracker.data.InventoryContract;
 import java.io.File;
 
 public class InventoryAdapter extends CursorAdapter {
-    private ReduceQuantity mListener;
+    private static final String TAG = "InventoryAdapter";
+    private static final int REDUCE_QUANTITY_LOADER = 1;
 
-    public InventoryAdapter(Context context, Cursor cursor, ReduceQuantity listener) {
+    public InventoryAdapter(Context context, Cursor cursor) {
         super(context, cursor);
-        mListener = listener;
     }
 
     @Override
@@ -35,24 +36,25 @@ public class InventoryAdapter extends CursorAdapter {
     public void bindView(View view, final Context context, final Cursor cursor) {
 
         // Find individual views that we want to modify in the list item layout
-        // TODO: add butterknife
         TextView nameTextView = (TextView) view.findViewById(R.id.item_name);
-        TextView quantityTextView = (TextView) view.findViewById(R.id.quantity);
+        final TextView quantityTextView = (TextView) view.findViewById(R.id.quantity);
         TextView priceTextView = (TextView) view.findViewById(R.id.price);
-        ImageView picTextView = (ImageView) view.findViewById(R.id.thumbnail);
+        ImageView picView = (ImageView) view.findViewById(R.id.thumbnail);
         Button saleButton = (Button) view.findViewById(R.id.sale_button);
 
         // Find the columns of pet attributes that we're interested in
+        int idColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry._ID);
         int nameColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME);
         int quantityColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_QUANTITY);
         int priceColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PRICE);
         int thumbnailColumnIndex = cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_PHOTO);
 
-        // Read the pet attributes from the Cursor for the current pet
+        // Read the item attributes from the Cursor for the current item
+        final int itemId = cursor.getInt(idColumnIndex);
         String itemName = cursor.getString(nameColumnIndex);
         final int quantity = cursor.getInt(quantityColumnIndex);
         float price = cursor.getFloat(priceColumnIndex);
-        String thumbnail = cursor.getString(thumbnailColumnIndex);
+        String thumbnailPath = cursor.getString(thumbnailColumnIndex);
 
         // Update the TextViews with the attributes for the current pet
         nameTextView.setText(itemName);
@@ -61,17 +63,16 @@ public class InventoryAdapter extends CursorAdapter {
         final String priceString = "$" + String.valueOf(price);
         priceTextView.setText(priceString);
 
-        if (thumbnail == null) {
-            picTextView.setImageResource(R.drawable.item);
+        if (thumbnailPath == null) {
+            picView.setImageResource(R.drawable.item);
         } else {
             // TODO: not displaying photo
-            String message = "path: " + thumbnail;
-            Log.v("InventoryAdapter", message);
-            File imgFile = new  File(thumbnail);
+            File imgFile = new  File(thumbnailPath);
 
             if(imgFile.exists()){
-                Bitmap bitmapPhoto = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                picTextView.setImageBitmap(bitmapPhoto);
+                Bitmap bitmap = BitmapFactory.decodeFile(thumbnailPath);
+                picView.setImageBitmap(bitmap);
+
             }
         }
 
@@ -79,7 +80,13 @@ public class InventoryAdapter extends CursorAdapter {
             @Override
             public void onClick(View v) {
                 if (quantity > 0) {
-                    mListener.reduce(quantity, cursor);
+                    int newQuantity = quantity - 1;
+                    Uri itemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, itemId);
+                    ReduceQuantity reduceQuantity = new ReduceQuantity(context, itemUri, newQuantity);
+                    reduceQuantity.onCreateLoader(REDUCE_QUANTITY_LOADER, null);
+                    if (reduceQuantity.getRowsAffected() == 1) {
+                        quantityTextView.setText(Integer.toString(newQuantity));
+                    }
                 } else {
                     String message = "You have no items left to sell!";
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show();

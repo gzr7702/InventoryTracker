@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements
         // Account for empty view
         View emptyStateView = findViewById(R.id.empty_view);
         mListView.setEmptyView(emptyStateView);
-
+/*
         ReduceQuantity listener = new ReduceQuantity() {
             @Override
             public void reduce(int quantity, Cursor cursor) {
@@ -60,8 +60,9 @@ public class MainActivity extends AppCompatActivity implements
 
             }
         };
+        */
 
-        mAdapter = new InventoryAdapter(this, null, listener);
+        mAdapter = new InventoryAdapter(this, null);
         mListView.setAdapter(mAdapter);
 
         // ListView Item Click Listener
