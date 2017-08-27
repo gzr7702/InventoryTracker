@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
@@ -76,8 +77,15 @@ public class InventoryAdapter extends CursorAdapter {
         if (thumbnailPath == null) {
             mPicView.setImageResource(R.drawable.item);
         } else {
-            Uri photoUri = Uri.fromFile(new File(thumbnailPath));
-            mPicView.setImageBitmap(getBitmapFromUri(photoUri));
+            final Uri photoUri = Uri.fromFile(new File(thumbnailPath));
+            ViewTreeObserver viewTreeObserver = mPicView.getViewTreeObserver();
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    mPicView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    mPicView.setImageBitmap(getBitmapFromUri(photoUri));
+                }
+            });
         }
 
         saleButton.setOnClickListener(new View.OnClickListener() {

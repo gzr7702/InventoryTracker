@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -532,7 +533,15 @@ public class EditActivity extends AppCompatActivity implements
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
             mPhotoUri = Uri.fromFile(new File(mPhotoPath));
-            mPictureView.setImageBitmap(getBitmapFromUri(mPhotoUri));
+
+            ViewTreeObserver viewTreeObserver = mPictureView.getViewTreeObserver();
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    mPictureView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    mPictureView.setImageBitmap(getBitmapFromUri(mPhotoUri));
+                }
+            });
         }
     }
 
