@@ -50,17 +50,6 @@ public class MainActivity extends AppCompatActivity implements
         // Account for empty view
         View emptyStateView = findViewById(R.id.empty_view);
         mListView.setEmptyView(emptyStateView);
-/*
-        ReduceQuantity listener = new ReduceQuantity() {
-            @Override
-            public void reduce(int quantity, Cursor cursor) {
-                Log.v("Main", "quantitiy " + quantity);
-                //TODO: add new quant to database
-                int newQuantity = quantity - 1;
-
-            }
-        };
-        */
 
         mAdapter = new InventoryAdapter(this, null);
         mListView.setAdapter(mAdapter);

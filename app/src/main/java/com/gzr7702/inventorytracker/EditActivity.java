@@ -33,10 +33,14 @@ import android.widget.Toast;
 import com.gzr7702.inventorytracker.data.InventoryContract;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Pattern;
+
+import static com.gzr7702.inventorytracker.data.InventoryProvider.LOG_TAG;
 
 /*
     This activity is used to add a new inventory item
@@ -66,6 +70,7 @@ public class EditActivity extends AppCompatActivity implements
     int mQuantity = 0;
     double mPrice = 0;
     String mPhotoPath = "";
+    Uri mPhotoUri;
 
     // Boolean flag that keeps track of whether the item has been edited
     private boolean mItemHasChanged = false;
@@ -154,7 +159,7 @@ public class EditActivity extends AppCompatActivity implements
                         }
                         // Continue only if the File was successfully created
                         if (photoFile != null) {
-                            Uri photoURI = FileProvider.getUriForFile(getBaseContext(),
+                            mPhotoUri = FileProvider.getUriForFile(getBaseContext(),
                                     "com.example.android.fileprovider",
                                     photoFile);
                             mPhotoPath = photoFile.getPath();
@@ -212,7 +217,9 @@ public class EditActivity extends AppCompatActivity implements
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
+        mPhotoPath = image.getAbsolutePath();
+        mPhotoUri = Uri.fromFile(new File(mPhotoPath));
+
         return image;
     }
 
@@ -223,9 +230,61 @@ public class EditActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.v(TAG, "in onActivityResult");
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            mPictureView.setImageBitmap(imageBitmap);
+            if (data != null) {
+                mPhotoUri = data.getData();
+                mPictureView.setImageBitmap(getBitmapFromUri(mPhotoUri));
+            }
+        }
+    }
+
+    public Bitmap getBitmapFromUri(Uri uri) {
+
+        if (uri == null || uri.toString().isEmpty())
+            return null;
+
+        // Get the dimensions of the View
+        int targetWidth = mPictureView.getWidth();
+        int targetHeight = mPictureView.getHeight();
+
+        InputStream input = null;
+        try {
+            input = this.getContentResolver().openInputStream(uri);
+
+            // Get the dimensions of the bitmap
+            BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+            bitmapOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(input, null, bitmapOptions);
+            input.close();
+
+            int photoWidth = bitmapOptions.outWidth;
+            int photoHeight = bitmapOptions.outHeight;
+
+            // Determine how much to scale down the image
+            //TODO: division by zero
+            int scaleFactor = Math.min(photoWidth/targetWidth, photoHeight/targetHeight);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bitmapOptions.inJustDecodeBounds = false;
+            bitmapOptions.inSampleSize = scaleFactor;
+            bitmapOptions.inPurgeable = true;
+
+            input = this.getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
+            input.close();
+            return bitmap;
+
+        } catch (FileNotFoundException fne) {
+            Log.e(LOG_TAG, "Photo not found.", fne);
+            return null;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to load image.", e);
+            return null;
+        } finally {
+            try {
+                input.close();
+            } catch (IOException ioe) {
+
+            }
         }
     }
 
@@ -472,9 +531,8 @@ public class EditActivity extends AppCompatActivity implements
             mItemEditText.setText(itemName);
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
-            Bitmap bitmapPhoto = BitmapFactory.decodeFile(mPhotoPath);
-            Log.v(TAG, "photo path for view " + mPhotoPath);
-            mPictureView.setImageBitmap(bitmapPhoto);
+            mPhotoUri = Uri.fromFile(new File(mPhotoPath));
+            mPictureView.setImageBitmap(getBitmapFromUri(mPhotoUri));
         }
     }
 

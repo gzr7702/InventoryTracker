@@ -12,7 +12,7 @@ import android.util.Log;
 import com.gzr7702.inventorytracker.data.InventoryContract;
 
 /**
- * Loader class used to reduce the quentity in the database when the "sale" button is pressed.
+ * Loader class used to reduce the quantity in the database when the "sale" button is pressed.
  */
 
 public class ReduceQuantity implements

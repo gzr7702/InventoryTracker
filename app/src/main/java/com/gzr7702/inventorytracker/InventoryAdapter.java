@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +19,22 @@ import android.widget.Toast;
 import com.gzr7702.inventorytracker.data.InventoryContract;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static com.gzr7702.inventorytracker.data.InventoryProvider.LOG_TAG;
+import static java.security.AccessController.getContext;
 
 public class InventoryAdapter extends CursorAdapter {
     private static final String TAG = "InventoryAdapter";
     private static final int REDUCE_QUANTITY_LOADER = 1;
+    Context mContext;
+    ImageView mPicView;
 
     public InventoryAdapter(Context context, Cursor cursor) {
         super(context, cursor);
+        mContext = context;
     }
 
     @Override
@@ -39,7 +49,7 @@ public class InventoryAdapter extends CursorAdapter {
         TextView nameTextView = (TextView) view.findViewById(R.id.item_name);
         final TextView quantityTextView = (TextView) view.findViewById(R.id.quantity);
         TextView priceTextView = (TextView) view.findViewById(R.id.price);
-        ImageView picView = (ImageView) view.findViewById(R.id.thumbnail);
+        mPicView = (ImageView) view.findViewById(R.id.thumbnail);
         Button saleButton = (Button) view.findViewById(R.id.sale_button);
 
         // Find the columns of pet attributes that we're interested in
@@ -64,16 +74,10 @@ public class InventoryAdapter extends CursorAdapter {
         priceTextView.setText(priceString);
 
         if (thumbnailPath == null) {
-            picView.setImageResource(R.drawable.item);
+            mPicView.setImageResource(R.drawable.item);
         } else {
-            // TODO: not displaying photo
-            File imgFile = new  File(thumbnailPath);
-
-            if(imgFile.exists()){
-                Bitmap bitmap = BitmapFactory.decodeFile(thumbnailPath);
-                picView.setImageBitmap(bitmap);
-
-            }
+            Uri photoUri = Uri.fromFile(new File(thumbnailPath));
+            mPicView.setImageBitmap(getBitmapFromUri(photoUri));
         }
 
         saleButton.setOnClickListener(new View.OnClickListener() {
@@ -93,5 +97,56 @@ public class InventoryAdapter extends CursorAdapter {
                 }
             }
         });
+    }
+
+    public Bitmap getBitmapFromUri(Uri uri) {
+
+        if (uri == null || uri.toString().isEmpty())
+            return null;
+
+        // Get the dimensions of the View
+        int targetWidth = mPicView.getWidth();
+        int targetHeight = mPicView.getHeight();
+
+        InputStream input = null;
+        try {
+            input = mContext.getContentResolver().openInputStream(uri);
+
+            // Get the dimensions of the bitmap
+            BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+            bitmapOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(input, null, bitmapOptions);
+            input.close();
+
+            int photoWidth = bitmapOptions.outWidth;
+            int photoHeight = bitmapOptions.outHeight;
+
+            // Determine how much to scale down the image
+            //TODO: division by zero
+            int scaleFactor = Math.min(photoWidth/targetWidth, photoHeight/targetHeight);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bitmapOptions.inJustDecodeBounds = false;
+            bitmapOptions.inSampleSize = scaleFactor;
+            bitmapOptions.inPurgeable = true;
+
+            input = mContext.getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
+            input.close();
+            return bitmap;
+
+        } catch (FileNotFoundException fne) {
+            Log.e(LOG_TAG, "Photo not found.", fne);
+            return null;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to load image.", e);
+            return null;
+        } finally {
+            try {
+                input.close();
+            } catch (IOException ioe) {
+
+            }
+        }
     }
 }
