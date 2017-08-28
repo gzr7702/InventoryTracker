@@ -164,6 +164,7 @@ public class EditActivity extends AppCompatActivity implements
                                     "com.example.android.fileprovider",
                                     photoFile);
                             mPhotoPath = photoFile.getPath();
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
                             startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
                         }
                     }

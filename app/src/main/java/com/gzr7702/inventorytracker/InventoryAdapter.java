@@ -74,19 +74,15 @@ public class InventoryAdapter extends CursorAdapter {
         final String priceString = "$" + String.valueOf(price);
         priceTextView.setText(priceString);
 
-        if (thumbnailPath == null) {
-            mPicView.setImageResource(R.drawable.item);
-        } else {
-            final Uri photoUri = Uri.fromFile(new File(thumbnailPath));
-            ViewTreeObserver viewTreeObserver = mPicView.getViewTreeObserver();
-            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    mPicView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    mPicView.setImageBitmap(getBitmapFromUri(photoUri));
-                }
-            });
-        }
+        final Uri photoUri = Uri.fromFile(new File(thumbnailPath));
+        ViewTreeObserver viewTreeObserver = mPicView.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                mPicView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                mPicView.setImageBitmap(getBitmapFromUri(photoUri));
+            }
+        });
 
         saleButton.setOnClickListener(new View.OnClickListener() {
             @Override
