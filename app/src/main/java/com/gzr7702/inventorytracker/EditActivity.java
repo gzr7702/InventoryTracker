@@ -55,7 +55,6 @@ public class EditActivity extends AppCompatActivity implements
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_TAKE_PHOTO = 1;
 
-    String mCurrentPhotoPath;
     private Uri mCurrentItemUri;
 
     private EditText mCompanyEditText;
@@ -70,8 +69,7 @@ public class EditActivity extends AppCompatActivity implements
     String mItem = "";
     int mQuantity = 0;
     double mPrice = 0;
-    String mPhotoPath = "";
-    Uri mPhotoUri;
+    Uri mPhotoUri = null;
 
     // Boolean flag that keeps track of whether the item has been edited
     private boolean mItemHasChanged = false;
@@ -163,7 +161,6 @@ public class EditActivity extends AppCompatActivity implements
                             mPhotoUri = FileProvider.getUriForFile(getBaseContext(),
                                     "com.example.android.fileprovider",
                                     photoFile);
-                            mPhotoPath = photoFile.getPath();
                             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
                             startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
                         }
@@ -218,10 +215,6 @@ public class EditActivity extends AppCompatActivity implements
                 storageDir      /* directory */
         );
 
-        // Save a file: path for use with ACTION_VIEW intents
-        mPhotoPath = image.getAbsolutePath();
-        mPhotoUri = Uri.fromFile(new File(mPhotoPath));
-
         return image;
     }
 
@@ -232,10 +225,8 @@ public class EditActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.v(TAG, "in onActivityResult");
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            if (data != null) {
-                mPhotoUri = data.getData();
-                mPictureView.setImageBitmap(getBitmapFromUri(mPhotoUri));
-            }
+           Bitmap bm = getBitmapFromUri(mPhotoUri);
+           mPictureView.setImageBitmap(bm);
         }
     }
 
@@ -246,7 +237,8 @@ public class EditActivity extends AppCompatActivity implements
 
         // Get the dimensions of the View
         int targetWidth = mPictureView.getWidth();
-        int targetHeight = mPictureView.getHeight();
+        //int targetHeight = mPictureView.getHeight();
+        int targetHeight = 960;
 
         InputStream input = null;
         try {
@@ -272,6 +264,8 @@ public class EditActivity extends AppCompatActivity implements
 
             input = this.getContentResolver().openInputStream(uri);
             Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
+            // TODO: problem is here? error is that input stream is null
+            // Could it be that the uri is not good?
             input.close();
             return bitmap;
 
@@ -322,7 +316,7 @@ public class EditActivity extends AppCompatActivity implements
         } else if(Float.parseFloat(priceString) < 0) {
             // check for negative
             return "Price";
-        } else if (mPhotoPath.isEmpty()) {
+        } else if (mPhotoUri == null) {
             return "Photo";
         }
         mPrice = Double.parseDouble(priceString);
@@ -347,7 +341,7 @@ public class EditActivity extends AppCompatActivity implements
         if (mCurrentItemUri == null &&
             TextUtils.isEmpty(companyNameString) && TextUtils.isEmpty(phoneNumberString) &&
             TextUtils.isEmpty(itemString) && TextUtils.isEmpty(quantityString) &&
-            TextUtils.isEmpty(priceString) && mPhotoPath.isEmpty()) {
+            TextUtils.isEmpty(priceString) && mPhotoUri == null) {
             return;
         }
 
@@ -357,7 +351,9 @@ public class EditActivity extends AppCompatActivity implements
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, mItem);
         values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, mQuantity);
         values.put(InventoryContract.InventoryEntry.COLUMN_PRICE, mPrice);
-        values.put(InventoryContract.InventoryEntry.COLUMN_PHOTO, mPhotoPath);
+        // TODO: use uribulder to build string =================================================
+        String uriString = mPhotoUri.toString();
+        values.put(InventoryContract.InventoryEntry.COLUMN_PHOTO, uriString);
 
 
         // check if this is a new or existing item to update
@@ -525,7 +521,7 @@ public class EditActivity extends AppCompatActivity implements
             String itemName = cursor.getString(itemColumnIndex);
             mQuantity = cursor.getInt(quantityColumnIndex);
             double price = cursor.getDouble(priceColumnIndex);
-            mPhotoPath = cursor.getString(photoColumnIndex);
+            String photoPath = cursor.getString(photoColumnIndex);
 
             // Update the views on the screen with the values from the database
             mCompanyEditText.setText(companyName);
@@ -533,7 +529,7 @@ public class EditActivity extends AppCompatActivity implements
             mItemEditText.setText(itemName);
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
-            mPhotoUri = Uri.fromFile(new File(mPhotoPath));
+            mPhotoUri = Uri.fromFile(new File(photoPath));
 
             ViewTreeObserver viewTreeObserver = mPictureView.getViewTreeObserver();
             viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {

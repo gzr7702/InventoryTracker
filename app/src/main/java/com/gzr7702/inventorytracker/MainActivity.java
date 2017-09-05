@@ -19,7 +19,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.gzr7702.inventorytracker.data.InventoryContract.InventoryEntry;
-import com.gzr7702.inventorytracker.ReduceQuantity;
 
 
 public class MainActivity extends AppCompatActivity implements

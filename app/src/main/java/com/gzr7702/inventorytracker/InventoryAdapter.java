@@ -74,13 +74,14 @@ public class InventoryAdapter extends CursorAdapter {
         final String priceString = "$" + String.valueOf(price);
         priceTextView.setText(priceString);
 
-        final Uri photoUri = Uri.fromFile(new File(thumbnailPath));
+        final Uri photoUri = Uri.parse(thumbnailPath);
         ViewTreeObserver viewTreeObserver = mPicView.getViewTreeObserver();
         viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 mPicView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                mPicView.setImageBitmap(getBitmapFromUri(photoUri));
+                Bitmap bm = getBitmapFromUri(photoUri);
+                mPicView.setImageBitmap(bm);
             }
         });
 
@@ -126,7 +127,6 @@ public class InventoryAdapter extends CursorAdapter {
             int photoHeight = bitmapOptions.outHeight;
 
             // Determine how much to scale down the image
-            //TODO: division by zero
             int scaleFactor = Math.min(photoWidth/targetWidth, photoHeight/targetHeight);
 
             // Decode the image file into a Bitmap sized to fill the View
