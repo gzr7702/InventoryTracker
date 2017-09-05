@@ -74,6 +74,7 @@ public class InventoryAdapter extends CursorAdapter {
         final String priceString = "$" + String.valueOf(price);
         priceTextView.setText(priceString);
 
+        // TODO: pic is not showing up except for the last item
         final Uri photoUri = Uri.parse(thumbnailPath);
         ViewTreeObserver viewTreeObserver = mPicView.getViewTreeObserver();
         viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {

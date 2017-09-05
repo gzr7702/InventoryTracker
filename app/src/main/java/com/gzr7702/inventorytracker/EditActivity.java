@@ -237,6 +237,7 @@ public class EditActivity extends AppCompatActivity implements
 
         // Get the dimensions of the View
         int targetWidth = mPictureView.getWidth();
+        // TODO: fix me: height == 0
         //int targetHeight = mPictureView.getHeight();
         int targetHeight = 960;
 
@@ -254,7 +255,6 @@ public class EditActivity extends AppCompatActivity implements
             int photoHeight = bitmapOptions.outHeight;
 
             // Determine how much to scale down the image
-            //TODO: division by zero
             int scaleFactor = Math.min(photoWidth/targetWidth, photoHeight/targetHeight);
 
             // Decode the image file into a Bitmap sized to fill the View
@@ -264,8 +264,6 @@ public class EditActivity extends AppCompatActivity implements
 
             input = this.getContentResolver().openInputStream(uri);
             Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
-            // TODO: problem is here? error is that input stream is null
-            // Could it be that the uri is not good?
             input.close();
             return bitmap;
 
@@ -351,7 +349,6 @@ public class EditActivity extends AppCompatActivity implements
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, mItem);
         values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, mQuantity);
         values.put(InventoryContract.InventoryEntry.COLUMN_PRICE, mPrice);
-        // TODO: use uribulder to build string =================================================
         String uriString = mPhotoUri.toString();
         values.put(InventoryContract.InventoryEntry.COLUMN_PHOTO, uriString);
 
@@ -529,7 +526,7 @@ public class EditActivity extends AppCompatActivity implements
             mItemEditText.setText(itemName);
             mQuantityEditText.setText(Integer.toString(mQuantity));
             mPriceEditText.setText("$" + Double.toString(price));
-            mPhotoUri = Uri.fromFile(new File(photoPath));
+            mPhotoUri = Uri.parse(photoPath);
 
             ViewTreeObserver viewTreeObserver = mPictureView.getViewTreeObserver();
             viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
