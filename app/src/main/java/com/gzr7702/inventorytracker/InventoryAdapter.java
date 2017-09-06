@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
@@ -75,15 +74,7 @@ public class InventoryAdapter extends CursorAdapter {
 
         // TODO: pic is not showing up except for the last item
         final Uri photoUri = Uri.parse(thumbnailPath);
-        ViewTreeObserver viewTreeObserver = mPicView.getViewTreeObserver();
-        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                mPicView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                Bitmap bm = getBitmapFromUri(photoUri);
-                mPicView.setImageBitmap(bm);
-            }
-        });
+        mPicView.setImageURI(photoUri);
 
         saleButton.setOnClickListener(new View.OnClickListener() {
             @Override
