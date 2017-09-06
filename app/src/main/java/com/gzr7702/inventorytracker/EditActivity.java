@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -25,7 +23,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -34,14 +31,10 @@ import android.widget.Toast;
 import com.gzr7702.inventorytracker.data.InventoryContract;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Pattern;
-
-import static com.gzr7702.inventorytracker.data.InventoryProvider.LOG_TAG;
 
 /*
     This activity is used to add a new inventory item
@@ -225,62 +218,7 @@ public class EditActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.v(TAG, "in onActivityResult");
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-           Bitmap bm = getBitmapFromUri(mPhotoUri);
-           mPictureView.setImageBitmap(bm);
-        }
-    }
-
-    public Bitmap getBitmapFromUri(Uri uri) {
-
-        if (uri == null || uri.toString().isEmpty())
-            return null;
-
-        // Get the dimensions of the View
-        int targetWidth = mPictureView.getWidth();
-        // TODO: fix me: height == 0
-        // This works:
-        //int targetHeight = 960;
-        // This doesn't:
-        int targetHeight = mPictureView.getHeight();
-
-        InputStream input = null;
-        try {
-            input = this.getContentResolver().openInputStream(uri);
-
-            // Get the dimensions of the bitmap
-            BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-            bitmapOptions.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(input, null, bitmapOptions);
-            input.close();
-
-            int photoWidth = bitmapOptions.outWidth;
-            int photoHeight = bitmapOptions.outHeight;
-
-            // Determine how much to scale down the image
-            int scaleFactor = Math.min(photoWidth/targetWidth, photoHeight/targetHeight);
-
-            // Decode the image file into a Bitmap sized to fill the View
-            bitmapOptions.inJustDecodeBounds = false;
-            bitmapOptions.inSampleSize = scaleFactor;
-            bitmapOptions.inPurgeable = true;
-
-            input = this.getContentResolver().openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
-            input.close();
-            return bitmap;
-
-        } catch (FileNotFoundException fne) {
-            Log.e(LOG_TAG, "Photo not found.", fne);
-            return null;
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Failed to load image.", e);
-            return null;
-        } finally {
-            try {
-                input.close();
-            } catch (IOException ioe) {
-
-            }
+           mPictureView.setImageURI(mPhotoUri);
         }
     }
 
@@ -530,14 +468,7 @@ public class EditActivity extends AppCompatActivity implements
             mPriceEditText.setText("$" + Double.toString(price));
             mPhotoUri = Uri.parse(photoPath);
 
-            ViewTreeObserver viewTreeObserver = mPictureView.getViewTreeObserver();
-            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    mPictureView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    mPictureView.setImageBitmap(getBitmapFromUri(mPhotoUri));
-                }
-            });
+            mPictureView.setImageURI(mPhotoUri);
         }
     }
 
