@@ -72,7 +72,6 @@ public class InventoryAdapter extends CursorAdapter {
         final String priceString = "$" + String.valueOf(price);
         priceTextView.setText(priceString);
 
-        // TODO: pic is not showing up except for the last item
         final Uri photoUri = Uri.parse(thumbnailPath);
         mPicView.setImageURI(photoUri);
 
@@ -93,55 +92,5 @@ public class InventoryAdapter extends CursorAdapter {
                 }
             }
         });
-    }
-
-    public Bitmap getBitmapFromUri(Uri uri) {
-
-        if (uri == null || uri.toString().isEmpty())
-            return null;
-
-        // Get the dimensions of the View
-        int targetWidth = mPicView.getWidth();
-        int targetHeight = mPicView.getHeight();
-
-        InputStream input = null;
-        try {
-            input = mContext.getContentResolver().openInputStream(uri);
-
-            // Get the dimensions of the bitmap
-            BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-            bitmapOptions.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(input, null, bitmapOptions);
-            input.close();
-
-            int photoWidth = bitmapOptions.outWidth;
-            int photoHeight = bitmapOptions.outHeight;
-
-            // Determine how much to scale down the image
-            int scaleFactor = Math.min(photoWidth/targetWidth, photoHeight/targetHeight);
-
-            // Decode the image file into a Bitmap sized to fill the View
-            bitmapOptions.inJustDecodeBounds = false;
-            bitmapOptions.inSampleSize = scaleFactor;
-            bitmapOptions.inPurgeable = true;
-
-            input = mContext.getContentResolver().openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
-            input.close();
-            return bitmap;
-
-        } catch (FileNotFoundException fne) {
-            Log.e(LOG_TAG, "Photo not found.", fne);
-            return null;
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Failed to load image.", e);
-            return null;
-        } finally {
-            try {
-                input.close();
-            } catch (IOException ioe) {
-
-            }
-        }
     }
 }

@@ -238,8 +238,10 @@ public class EditActivity extends AppCompatActivity implements
         // Get the dimensions of the View
         int targetWidth = mPictureView.getWidth();
         // TODO: fix me: height == 0
-        //int targetHeight = mPictureView.getHeight();
-        int targetHeight = 960;
+        // This works:
+        //int targetHeight = 960;
+        // This doesn't:
+        int targetHeight = mPictureView.getHeight();
 
         InputStream input = null;
         try {
