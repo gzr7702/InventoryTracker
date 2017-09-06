@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static com.gzr7702.inventorytracker.data.InventoryProvider.LOG_TAG;
-import static java.security.AccessController.getContext;
 
 public class InventoryAdapter extends CursorAdapter {
     private static final String TAG = "InventoryAdapter";
