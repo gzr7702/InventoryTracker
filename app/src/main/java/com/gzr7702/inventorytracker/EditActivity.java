@@ -121,8 +121,10 @@ public class EditActivity extends AppCompatActivity implements
         decrementButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-                mQuantity--;
-                mQuantityEditText.setText(Integer.toString(mQuantity));
+                if (mQuantity > 0) {
+                    mQuantity--;
+                    mQuantityEditText.setText(Integer.toString(mQuantity));
+                }
             }
         });
 

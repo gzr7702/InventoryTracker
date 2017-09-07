@@ -62,7 +62,7 @@
                     android:layout_gravity="left"
                     android:layout_weight="3"
                     android:ems="10"
-                    android:text="Name"
+                    android:hint="Name"
                     tools:layout_editor_absoluteX="85dp"
                     tools:layout_editor_absoluteY="100dp"/>
 
@@ -87,12 +87,13 @@
 
                 <EditText
                     android:id="@+id/phone_edit_text"
+                    android:inputType="phone"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_gravity="left"
                     android:layout_weight="3"
                     android:ems="10"
-                    android:text="@string/phone_edit_hint"
+                    android:hint="@string/phone_edit_hint"
                     tools:layout_editor_absoluteX="85dp"
                     tools:layout_editor_absoluteY="100dp"/>
 
@@ -122,7 +123,7 @@
                     android:layout_gravity="left"
                     android:layout_weight="3"
                     android:ems="10"
-                    android:text="@string/name_edit_hint"
+                    android:hint="@string/name_edit_hint"
                     tools:layout_editor_absoluteX="85dp"
                     tools:layout_editor_absoluteY="100dp"/>
 
@@ -154,13 +155,14 @@
 
                     <EditText
                         android:id="@+id/quantity_edit_text"
+                        android:inputType="number"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_margin="10dp"
                         android:layout_weight="3"
                         android:ems="10"
-                        android:text="@string/quantity_edit_hint"
+                        android:hint="@string/quantity_edit_hint"
                         tools:layout_editor_absoluteX="85dp"
                         tools:layout_editor_absoluteY="164dp"/>
 
@@ -197,13 +199,14 @@
 
                 <EditText
                     android:id="@+id/price_edit_text"
+                    android:inputType="numberDecimal"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_gravity="center"
                     android:layout_margin="10dp"
                     android:layout_weight="3"
                     android:ems="10"
-                    android:text="@string/price_edit_hint"
+                    android:hint="@string/price_edit_hint"
                     tools:layout_editor_absoluteX="85dp"
                     tools:layout_editor_absoluteY="231dp"/>
 

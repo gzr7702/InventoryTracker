@@ -36,10 +36,12 @@ public class ReduceQuantity implements
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.v("ReduceQuantity", "start");
 
-        int newQuantity = mQuantity--;
-        ContentValues values = new ContentValues();
-        values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, newQuantity);
-        mRowsAffected = mContext.getApplicationContext().getContentResolver().update(mUri, values, null, null);
+        if (mQuantity > 0) {
+            int newQuantity = mQuantity--;
+            ContentValues values = new ContentValues();
+            values.put(InventoryContract.InventoryEntry.COLUMN_QUANTITY, newQuantity);
+            mRowsAffected = mContext.getApplicationContext().getContentResolver().update(mUri, values, null, null);
+        }
 
         return null;
     }
