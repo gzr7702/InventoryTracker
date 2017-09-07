@@ -237,12 +237,16 @@ public class EditActivity extends AppCompatActivity implements
         String originalPriceString = mPriceEditText.getText().toString().trim();
         StringBuilder sb = new StringBuilder(originalPriceString);
         String priceString = originalPriceString;
-        // Check if dollar sign is in the price field
-        if (sb.charAt(0) == '$') {
+        // Check if dollar sign is in the price field and if so, delete it
+        if (!priceString.isEmpty() && sb.charAt(0) == '$') {
             priceString = sb.deleteCharAt(0).toString();
         }
 
-        if (!Pattern.matches("\\d{3}-\\d{4}", mPhoneNumber)) {
+        if (mCompanyName.isEmpty() || Pattern.matches("\\s+", mCompanyName)) {
+            return "Company Name";
+        } else if (mItem.isEmpty() || Pattern.matches("\\s+", mItem)) {
+                return "Item";
+        } else if (!Pattern.matches("\\d{3}-\\d{4}", mPhoneNumber)) {
             return "Phone Number";
         } else if (!Pattern.matches("\\d+(?:\\.\\d+)?", quantityString)) {
             return "Quantity";
